@@ -16,4 +16,4 @@ export default mongoose.model<{
     name: string;
     description: string;
     _id: object;
-}>('accounts')
+}>('accounts', schema)
