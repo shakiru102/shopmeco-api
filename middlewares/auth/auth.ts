@@ -26,6 +26,7 @@ export const individualSignupAccountMiddleware = async (req: Request, res: Respo
 
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
     const token = req.headers.authorization?.replace('Bearer ', '')
+    
   if(!token) return res.status(401).send({ error: 'No token provided' })
   const authUser = async (id: string) => {
         const user = await User.findById(id,{ password: 0 });
@@ -44,10 +45,8 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
       .catch(async () => {
         const decode: any = decodeToken(token)
         if(!decode) return res.status(401).send({ error: 'User unauthorized' })
-        const user = await authUser(decode.userId)
-        if(!user) return res.status(401).send({ error: 'User unauthorized' })
         //  @ts-ignore
-       req.userId = user.id
+       req.userId = decode.userId
         next()
     })
 }

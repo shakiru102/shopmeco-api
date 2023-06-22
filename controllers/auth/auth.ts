@@ -37,7 +37,7 @@ export const createBuisnessUserAccount = async (req: Request, res: Response) => 
             email,
             fullName,
             password: hashedPassword,
-            userAccountsId,
+            userAccountsId: [userAccountsId, 'individual'],
             ...(files && { workShopPhoto: imageData }),
             ...(phoneNumber && { phoneNumber }),
             ...(workShop && { workShop }),
