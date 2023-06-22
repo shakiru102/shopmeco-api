@@ -4,6 +4,7 @@ import env from 'dotenv'
 import cors, { CorsOptions } from 'cors';
 import AuthRoutes from './routes/auth'
 import ExtrasRoutes from './routes/extras'
+import UserRoutes from './routes/user'
 
 env.config()
 const options: CorsOptions = {
@@ -24,6 +25,7 @@ app.use(express.json());
 
 app.use('/api/auth', AuthRoutes);
 app.use('/api', ExtrasRoutes);
+app.use('/api/user', UserRoutes);
 
 app.listen(Port, () => console.log('listening on port: ' + Port));
 

@@ -23,9 +23,6 @@ const schema = new mongoose.Schema<IUser>({
     phoneNumber: {
         type: String,
     },
-    servicesId: {
-        type: Array
-    },
     state: {
         type: String,
     },
@@ -51,6 +48,6 @@ const schema = new mongoose.Schema<IUser>({
     picture: {
         type: String,
     }
-})
+}, { timestamps: true })
 
 export default mongoose.model<IUser>('users', schema)

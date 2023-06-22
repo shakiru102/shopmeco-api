@@ -12,7 +12,6 @@ export interface IUser {
     workShop?: string;
     workShopAddress?: string;
     workShopPhoto?: ImageProps[];
-    servicesId?: string[];
     state?: string;
     address?: string;
     carName?: string;
