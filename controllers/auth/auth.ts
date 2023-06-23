@@ -95,7 +95,6 @@ export const createIndividualUserAccount = async (req: Request, res: Response) =
 
 export const signinWithGoogle = async (req: Request, res: Response) => {
     try {
-        if(!req.body.accessToken) return res.status(400).send({ error: "accessToken is required" })
        const authUser = await axios.get(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${req.body.accessToken}`)
        console.log(authUser);
        if(authUser.status = 200 ){
@@ -108,6 +107,7 @@ export const signinWithGoogle = async (req: Request, res: Response) => {
                 email: authUser.data.email,
                 fullName: authUser.data.name,
                 picture: authUser.data.picture,
+                userAccountsId: req.body.accountType
              })
              if(!createUser) return res.status(400).send({ message: 'Could not create user' })
             res.status(200).send({ message: "User is authenticated" })

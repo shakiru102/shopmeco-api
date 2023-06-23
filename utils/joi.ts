@@ -39,9 +39,21 @@ const updatePasswordSchema = Joi.object<{oldPassword: string; newPassword: strin
     oldPassword: Joi.string().required().min(8)
 })
 
+const updateWorkShopInfoSchema = Joi.object<IUser>({
+    workShop: Joi.string(),
+    workShopAddress: Joi.string(),
+})
+
+const googleSchema = Joi.object<{accessToken: string; accountType: string}>({
+    accessToken: Joi.string().required(),
+    accountType: Joi.valid('individual', 'business').required()
+});
+
 
 
 export const buisnessAccount = (user: IUser) => buisnessAccountSchema.validate(user)
 export const individualAccount = (user: IUser) => individualAccountSchema.validate(user)
 export const updateIndividualProfileInfo = (user: IUser) => updateIndividualProfileInfoSchema.validate(user)
 export const updatePasswordValidate = (data: object) => updatePasswordSchema.validate(data)
+export const updateWorkshopInfoValidate = (user: IUser) => updateWorkShopInfoSchema.validate(user)
+export const googleSchemaValidate = (data: object) => googleSchema.validate(data)

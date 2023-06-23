@@ -1,5 +1,5 @@
 import e, { NextFunction, Request, Response } from "express";
-import { buisnessAccount, individualAccount } from "../../utils/joi";
+import { buisnessAccount, googleSchemaValidate, individualAccount } from "../../utils/joi";
 import axios from "axios";
 import User from "../../models/User";
 import { decodeToken } from "../../utils/jwt";
@@ -17,6 +17,16 @@ export const businessSignupAccountMiddleware = async (req: Request, res: Respons
 export const individualSignupAccountMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { error } = individualAccount(req.body)
+        if(error) return res.status(400).send({ error: error.details[0].message });
+        next()
+    } catch (error: any) {
+        res.status(500).send({ error: error.message })
+    }
+}
+
+export const googleSchemaValidations = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { error } = googleSchemaValidate(req.body)
         if(error) return res.status(400).send({ error: error.details[0].message });
         next()
     } catch (error: any) {
@@ -50,3 +60,5 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
         next()
     })
 }
+
+

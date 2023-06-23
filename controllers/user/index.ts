@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import User from "../../models/User";
 import { saveFile } from "../../utils/cloudinary";
 import { IUser } from "../../types";
-import { decryptPassword } from "../../utils/bcrypt";
+import { decryptPassword, encryptPassword } from "../../utils/bcrypt";
 
 export const userProfile = async (req: Request, res: Response) => {
     // @ts-ignore
@@ -73,13 +73,48 @@ export const updateUserPasswords = async (req: Request, res: Response) => {
         if(!user) return res.status(400).send({ error: "User not found" })
         const isPassword = await decryptPassword(oldPassword, user?.password as string)
         if(!isPassword) return res.status(400).send({ error: "Password is incorrect" })
-        const updatePassword = await User.updateOne({ _id: userId }, {
-            $set: {
-                password: newPassword
-            }
-        })
+        const password = encryptPassword(newPassword)
+        const updatePassword = await User.updateOne({ _id: userId }, { $set: { password } })
         if(updatePassword.modifiedCount === 0 ) return res.status(400).send({ error: "Couldn't update password" })
         res.status(200).send({message: "Password updated successfully" })
+    } catch (error: any) {
+        res.status(500).send({ error: error.message })
+    }
+}
+
+export const updateWorkshopInfo = async (req: Request, res: Response) => {
+    try {
+        // @ts-ignore
+        const userId = req.userId
+        const { workShop, workShopAddress }: IUser = req.body
+        const updateWorkshop = await User.updateOne({ _id: userId }, {
+            $set: {
+                ...(workShop && { workShop }),
+                ...(workShopAddress && { workShopAddress })
+            }
+        })
+        if(updateWorkshop.matchedCount === 0) return res.status(400).send({ error: "Could not update work shop information" })
+        res.status(200).send({ message: "Work shop information updated successfully" })
+    } catch (error: any) {
+        res.status(500).send({ error: error.message })
+    }
+}
+
+export const createBuisnessAccount = async (req: Request, res: Response) => {
+    try {
+        // @ts-ignore
+        const userId = req.userId
+        const businessAcc = await User.findOne({ _id: userId, userAccountsId: {
+            $in: 'business'
+        } })
+        if(businessAcc) return res.status(400).send({ error: "User already as a business account" })
+        const createAcc = await User.updateOne({ _id: userId }, {
+            $push: {
+                userAccountsId: 'business',
+            }
+        })
+        if(!createAcc) return res.status(400).send({ error: "Could not create business account" })
+        res.status(200).send({ message: "Business account created successfully" })
     } catch (error: any) {
         res.status(500).send({ error: error.message })
     }
