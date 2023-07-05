@@ -1,28 +1,20 @@
 import { Request, Response } from "express";
-import { IUser } from "../../types";
+import { BuisnessAccountsProps, IUser } from "../../types";
 import { saveFile } from "../../utils/cloudinary";
 import User from "../../models/User";
 import { decryptPassword, encryptPassword } from "../../utils/bcrypt";
 import { generateToken } from "../../utils/jwt";
 import axios from "axios";
+import Business from "../../models/Business";
+
+interface ResponseBodyProps extends BuisnessAccountsProps, IUser {}
 
 export const createBuisnessUserAccount = async (req: Request, res: Response) => {
     try {
-        const imageData: IUser['workShopPhoto'] = []
-        const files = req.files
+        const file = req.file
         const isUser = await User.findOne({ email: req.body.email })
+        let logo: BuisnessAccountsProps['workShopLogo'] = {}
         if(isUser) return res.status(400).send({ error: "User already exists" })
-        if(files){
-            for(let file of files as any) {
-                const { path, originalname } = file
-                const { error, response } = await saveFile(path, 'work-shop-photo')
-                if(error) res.status(400).send({ warning: "Error saving work shop photo: " + originalname})
-                response && imageData.push({
-                    cloudId: response.public_id,
-                    url: response.secure_url
-                })
-            }
-        }
         const { 
             email,
             password,
@@ -30,21 +22,41 @@ export const createBuisnessUserAccount = async (req: Request, res: Response) => 
             phoneNumber,
             workShop,
             workShopAddress,
-            userAccountsId
-        }: IUser = req.body
+            description,
+            caption,
+        }: ResponseBodyProps = req.body
+
         const hashedPassword = await encryptPassword(password as string)
         const user = await User.create({
             email,
             fullName,
             password: hashedPassword,
-            userAccountsId: [userAccountsId, 'individual'],
-            ...(files && { workShopPhoto: imageData }),
             ...(phoneNumber && { phoneNumber }),
-            ...(workShop && { workShop }),
-            ...(workShopAddress && { workShopAddress })
          })
          if(!user) return res.status(400).send({ error: "Could not create user" })
          const token = generateToken(user._id)
+         if(file){
+            const { path, originalname } = file
+            const { error, response } = await saveFile(path, 'business-logo')
+            if(error) res.status(400).send({ warning: "Error saving work shop photo: " + originalname})
+            logo = { 
+                cloudId: response?.public_id,
+                url: response?.secure_url
+            }
+        }
+         const businessAcc = await Business.create({
+            userId: user._id,
+            ...(workShop && { workShop }),
+            ...(workShopAddress && { workShopAddress }),    
+            ...(logo && { workShopLogo: logo }),
+            ...(description && { description }),    
+            ...(caption && { caption })
+         })
+         if(!businessAcc) return res.status(200).send({ 
+            warning: "Could not create business account",
+            message: "User created successfully",
+            token
+         })
          res.status(200).send({
             message: "User created successfully",
             token
@@ -67,15 +79,12 @@ export const createIndividualUserAccount = async (req: Request, res: Response) =
             password,
             phoneNumber,
             state,
-            userAccountsId,
-
         }: IUser = req.body
         const hashedPassword = await encryptPassword(password as string)
         const user = await User.create({
             email,
             fullName,
             password: hashedPassword,
-            userAccountsId,
             ...(address && { address }),
             ...(carModel && { carModel }),
             ...(carName && { carName }),
@@ -96,7 +105,6 @@ export const createIndividualUserAccount = async (req: Request, res: Response) =
 export const signinWithGoogle = async (req: Request, res: Response) => {
     try {
        const authUser = await axios.get(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${req.body.accessToken}`)
-       console.log(authUser);
        if(authUser.status = 200 ){
           if(!authUser.data.email) return res.status(400).send({ error: 'User email not added to google scope' });
           const user = await User.findOne({ email: authUser.data.email})
@@ -107,9 +115,15 @@ export const signinWithGoogle = async (req: Request, res: Response) => {
                 email: authUser.data.email,
                 fullName: authUser.data.name,
                 picture: authUser.data.picture,
-                userAccountsId: req.body.accountType
              })
-             if(!createUser) return res.status(400).send({ message: 'Could not create user' })
+             if(!createUser) return res.status(400).send({ error: 'Could not create user' })
+             if(req.body.accountType === 'business') {
+                const businessAcc = await Business.create({ userId: createUser._id })
+                if(!businessAcc) return res.status(200).send({ 
+                    message: "User is not authenticated",
+                    warning: "Business account not created"
+                })
+             } 
             res.status(200).send({ message: "User is authenticated" })
        }
        

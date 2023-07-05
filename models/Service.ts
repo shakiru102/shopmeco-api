@@ -1,9 +1,14 @@
 import mongoose from "mongoose";
+import { IServicesProps } from "../types";
 
-const schema = new mongoose.Schema<{ name: string }>({
+const schema = new mongoose.Schema<IServicesProps>({
     name: {
         type: String
+    },
+    caption: {
+        type: String
     }
-})
 
-export default mongoose.model<{name: string; _id: object}>('services', schema)
+}, { timestamps: true })
+
+export default mongoose.model<IServicesProps>('services', schema)

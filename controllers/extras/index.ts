@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Service from "../../models/Service";
-import Account from "../../models/Account";
+import Account from "../../models/Business";
 
 export const getServices = async (req: Request, res: Response) => {
     try {

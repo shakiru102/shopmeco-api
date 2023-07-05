@@ -22,3 +22,12 @@ export const saveFile = async (filePath: string, folder: string, id?: string) =>
     }
     
 }
+
+export const deleteFile = async (publicId: string) => {
+    try {
+        const response = await cloudinary.v2.uploader.destroy(publicId)
+        return { response }
+    } catch (error: any) {
+        return { error }
+    }
+}

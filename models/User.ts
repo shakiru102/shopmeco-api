@@ -26,25 +26,6 @@ const schema = new mongoose.Schema<IUser>({
     state: {
         type: String,
     },
-    workShop: {
-        type: String,
-    },
-    workShopAddress: {
-        type: String,
-    },
-    workShopPhoto: [
-        {
-            cloudId: {
-                type: String,
-            },
-            url: {
-                type: String,
-            }
-        }
-    ],
-    userAccountsId: {
-        type: Array,
-    },
     picture: {
         type: String,
     }

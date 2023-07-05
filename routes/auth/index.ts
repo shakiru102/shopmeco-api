@@ -5,7 +5,7 @@ import upload from "../../utils/multer";
 
 const route = Router()
 
-route.post('/signup-business', businessSignupAccountMiddleware, upload.array('files'), createBuisnessUserAccount)
+route.post('/signup-business', businessSignupAccountMiddleware, upload.single('file'), createBuisnessUserAccount)
 route.post('/signup', individualSignupAccountMiddleware, createIndividualUserAccount)
 route.post('/signin/google', googleSchemaValidations, signinWithGoogle)
 route.post('/signin', signInWithEmailAndPassword)
